@@ -1,3 +1,7 @@
+enum RPiGPIOMode <SIMPLE BCM>;
+enum RPiPinMode  <INPUT OUTPUT>;
+enum RPiPinValue <LOW HIGH>;
+
 package RPi::Wiring {
     use NativeCall;
 

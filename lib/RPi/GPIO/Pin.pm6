@@ -13,7 +13,7 @@ class RPi::GPIO::Pin {
     RPi::Wiring::digital-write(self.id, $value)
   }
 
-  method read() returns RPiPinValue {
+  method read() returns Int {
     return RPi::Wiring::digital-read(self.id)
   }
 }

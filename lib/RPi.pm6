@@ -1,7 +1,10 @@
 class RPi {
   use RPi::Wiring;
+  use RPi::GPIO;
   use POSIX;
 
+  has RPi::GPIO $!gpio;
+  
   method drop-privileges(Str $user, Str $group) returns Bool {
     return self.set-group($group) && self.set-user($user)
   }
@@ -38,6 +41,10 @@ class RPi {
     return True;
   }
 
+  method gpio(RPiGPIOMode :$mode = SIMPLE) {
+    return (! $!gpio.defined) ?? ($!gpio = RPi::GPIO.new(mode => $mode)) !! $!gpio;
+  }
+  
   method delay(Int $milliseconds where $milliseconds >= 0) {
     return RPi::Wiring::delay-milliseconds($milliseconds)
   }

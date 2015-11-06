@@ -1,4 +1,4 @@
-enum RPiGPIOMode <SIMPLE BCM>;
+enum RPiGPIOMode <WIRING BCM>;
 enum RPiPinMode  <INPUT OUTPUT>;
 enum RPiPinValue <LOW HIGH>;
 

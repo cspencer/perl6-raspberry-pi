@@ -41,7 +41,7 @@ class RPi {
     return True;
   }
 
-  method gpio(RPiGPIOMode :$mode = SIMPLE) {
+  method gpio(RPiGPIOMode :$mode = BCM) {
     return (! $!gpio.defined) ?? ($!gpio = RPi::GPIO.new(mode => $mode)) !! $!gpio;
   }
   

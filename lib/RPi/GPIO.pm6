@@ -17,7 +17,7 @@ class RPi::GPIO {
 
     my @pins;
     given $mode {
-      when SIMPLE {
+      when WIRING {
         # Use the simplified pin numbering scheme implemented by the WiringPi library.
         RPi::Wiring::setup();
         given RPi::Wiring::board-revision() {

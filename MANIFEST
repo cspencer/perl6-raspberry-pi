@@ -1,0 +1,8 @@
+./META.info
+./MANIFEST
+./lib/RPi.pm6
+./lib/RPi/GPIO/Pin.pm6
+./lib/RPi/GPIO.pm6
+./lib/RPi/Wiring.pm6
+./bin/example-1.p6
+./README.md

@@ -18,7 +18,7 @@ The WiringPi libraries should be installed before installing the Perl 6 modules.
 
 The Perl 6 compiler can be installed easily using the rakudobrew installer.  You can find its installation documentation here:
 
-    [](https://github.com/tadzik/rakudobrew)
+    https://github.com/tadzik/rakudobrew
 
 Once rakudobrew has been installed, build the Panda package manager with:
 

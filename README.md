@@ -70,6 +70,11 @@ Usage
     # Restore the GPIO pins to their original state.
     $rpi.gpio.cleanup();
 
+Supported Devices
+-----------------
+
+    * RPi::Device::DS18B20 - Module for the DS18B20 family of temperature sensors.
+
 Author
 ------
 

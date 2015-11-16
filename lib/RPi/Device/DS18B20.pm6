@@ -1,71 +1,99 @@
-{
-  my $BASEPATH = "/sys/bus/w1/devices";
+=begin pod
 
-  enum DegreeUnits <C F>;
+=head1 NAME
 
-  grammar RPi::Device::DS18B20::Grammar {
-    token TOP {
-      (<hexcode> ' ') ** 9 ': crc=' <hexcode> ' ' $<valid> = ['YES' || 'NO'] \n
-      (<hexcode> ' ') ** 9 't=' $<temperature> = [ \d+ ] \n
-    }
+RPi::Device::DS18B20 provides support for the DS18B20 family of temperature sensors.
+
+=head1 SYNOPSIS
+
+    use RPi::Device::DS18B20;
     
-    token hexcode {
-      <[ a..f 0..9 ]> ** 2
-    }
-  }
-  
-  class RPi::Device::DS18B20::Sensor {
-    has DegreeUnits $.units is rw = C;
-    has Str $.id;
+    MAIN: {
+      my $ds18b20 = RPi::Device::DS18B20.new();
+
+      # Get a list of all DS18B20 sensors connected to the RPi.
+      my @sensors = $ds18b20.detect-sensors();
     
-    method read() returns Rat {
-      my $path = $BASEPATH ~ "/28-" ~ $.id ~ "/w1_slave";
-
-      # Ensure the file exists that we're going to take readings from.
-      die "Unable to locate: $path - can't take sensor reading"
-        if ! $path.IO.e;
-
-      # Parse the output present in the sensor's device file.
-      my $match = RPi::Device::DS18B20::Grammar.parse(~$path.IO.slurp);
-
-      # The sensor will print 'YES' if the input is valid, and 'NO' if not.
-      # When valid, convert to the request degree units and return.
-      if (~$<valid> eq 'YES') {
-        # Temperature is reported in 1/1000's of a degree - divide by 100 to
-        # get the actual value.
-        my $temp = (+$<temperature>)/1000;
-
-        # If needed, do conversion to the Fahrenheit temperature scale.
-        ($!units == C) ?? $temp !! self.convert-to-fahrenheit($temp);
-      } else {
-        return Nil;
+      loop {
+        for @sensors -> $sensor {
+          # Set the units to Celcius (the default - use F for Fahrenheit scale).
+          $sensor.units = C;
+    
+          # Get a temperature reading from the sensor.
+          my $temp = $sensor.read();
+    
+          # If we were able to read a temperature, the result with be defined -
+          # .read() will return Nil if the sensor was not able to provide a
+          # temperature value.
+          say "Temperature is: $temp" ~ $sensor.units()
+            if $temp.defined;
+        }
+    
+        sleep 1;
       }
     }
 
-    method convert-to-fahrenheit(Rat $temp) returns Rat {
-      return ($temp * 1.8) + 32
+=head1 DESCRIPTION
+
+RPi::Device::DS18B20 provides access to the DS18B20 family of temperature sensors that can be connected to the Raspberry Pi.  The DS18B20 sensors uses the Dallas 1-Wire protocol to connect to the RPi, and will require loading of w1-gpio kernel module.
+
+Adafruit has an excellent tutorial on getting the Raspberry Pi set up to use the DS18B20 sensors here:
+
+  https://www.adafruit.com/products/381
+
+=head1 CONSTRUCTOR
+
+The RPi::Device::DS18B20 takes no parameters.  The constructor will check to see if the "/sys/bus/w1/device/" directory exists, and will throw an error if not. If your program is getting an exception during object construction, check to ensure that the 'w1-gpio' kernel module is loaded.
+
+=head1 METHODS
+
+=item method detect-sensors() returns Array - Returns an Array of RPi::Device::DS18B20::Sensor objects that were detected on the RPi.
+
+=item method get-sensor(Str $id) returns RPi::Device::DS18B20::Sensor - Returns the RPi::Device::DS18B20::Sensor corresponding to the provided ID $id.  If a sensor with the provided id wasn't found, returns Nil.
+
+=head1 SEE ALSO
+
+=item RPi
+
+=item RPi::GPIO
+
+=item RPi::Device::DS18B20::Sensor
+
+=head1 AUTHOR
+
+    Cory Spencer <cspencer@sprocket.org>
+
+=end pod
+
+use RPi::Device::DS18B20::Sensor;
+
+class RPi::Device::DS18B20 {
+  has $.base-path;
+
+  submethod BUILD {
+    $!base-path = "/sys/bus/w1/devices";
+      
+    if (! $!base-path.IO.e) {
+      die "Unable to locate: $!base-path - is the wp-gpio kernel module loaded?"
     }
   }
-
-  class RPi::Device::DS18B20 {
-    submethod BUILD {
-      if (! $BASEPATH.IO.e) {
-        die "Unable to locate: $BASEPATH - is the wp-gpio kernel module loaded?"
-      }
-    }
     
-    method detect-sensors() {
-      # Get a list of the unique ID's for each potential sensor plugged into the RPi.
-      my @sensors = flat $BASEPATH.IO.dir.map: { m/^ $BASEPATH "/28-" (<[ a..f 0..9]>+) $/ ?? $/[0].Str !! () };
+  method detect-sensors() returns Array {
+    my $path = $!base-path;
+      
+    # Get a list of the unique ID's for each potential sensor plugged into the RPi.
+    my @sensors = flat $path.IO.dir.map: { m/^ $path "/28-" (<[ a..f 0..9]>+) $/ ?? $/[0].Str !! () };
 
-      # Create a new Sensor object for each matching ID.
-      return @sensors.map: { RPi::Device::DS18B20::Sensor.new(id => $_) };
-    }
+    # Create a new Sensor object for each matching ID.
+    return (@sensors.map: {
+                            RPi::Device::DS18B20::Sensor.new(id   => $_,
+                                                             path => $path ~ "/28-$_/w1_slave")
+                          }).Array;
+  }
 
-    method get-sensor(Str $id) returns RPi::Device::DS18B20::Sensor {
-      # Search for the specified sensor ID in the list of detected devices
-      # and return it if found.
-       return (self.detect-sensors.first: { $_.id eq $id } || Nil)
-    }
+  method get-sensor(Str $id) returns RPi::Device::DS18B20::Sensor {
+    # Search for the specified sensor ID in the list of detected devices
+    # and return it if found.
+    return (self.detect-sensors.first: { $_.id eq $id } || Nil)
   }
 }

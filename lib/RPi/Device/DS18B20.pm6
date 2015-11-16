@@ -38,7 +38,7 @@
         # If needed, do conversion to the Fahrenheit temperature scale.
         ($!units == C) ?? $temp !! self.convert-to-fahrenheit($temp);
       } else {
-        return NaN;
+        return Nil;
       }
     }
 

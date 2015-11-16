@@ -73,7 +73,7 @@ Usage
 Supported Devices
 -----------------
 
-    * RPi::Device::DS18B20 - Module for the DS18B20 family of temperature sensors.
+* RPi::Device::DS18B20 - Module for the DS18B20 family of temperature sensors.
 
 Author
 ------

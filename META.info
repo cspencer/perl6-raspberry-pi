@@ -1,6 +1,6 @@
 {
     "name" : "RPi",
-    "version" : "0.1.0",
+    "version" : "0.1.1",
     "description" : "RPi - An interface to the Raspberry Pi's GPIO and other peripherals",
     "author" : "Cory Spencer",
     "provides" : {
